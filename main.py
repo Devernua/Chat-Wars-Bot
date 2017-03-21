@@ -89,7 +89,7 @@ castle = orders[castle_name]
 # текущий приказ на атаку/защиту, по умолчанию всегда защита, трогать не нужно
 current_order = {'time': 0, 'order': castle}
 
-sender = Sender(sock=socket_path) if socket_path else Sender(host=host,port=port)
+sender = Sender(sock=socket_path) if socket_path else Sender(host=host, port=port)
 action_list = deque([])
 log_list = deque([], maxlen=30)
 lt_arena = 0
@@ -109,8 +109,8 @@ def work_with_message(receiver):
     while True:
         msg = (yield)
         try:
-            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None:
-                parse_text(msg['text'], msg['sender']['username'], msg['id'])
+            if msg['event'] == 'message' and 'text' in msg and msg['peer_type'] is not None:
+                parse_text(msg['text'], msg['from']['username'], msg['id'])
         except Exception as err:
             log('Ошибка coroutine: {0}'.format(err))
 
@@ -368,7 +368,7 @@ def log(text):
 
 
 if __name__ == '__main__':
-    receiver = Receiver(sock=socket_path) if socket_path else Receiver(port=port)
+    receiver = Receiver(host=host, port=port)
     receiver.start()  # start the Connector.
     _thread.start_new_thread(queue_worker, ())
     receiver.message(work_with_message(receiver))
