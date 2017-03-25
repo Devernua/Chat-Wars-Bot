@@ -211,8 +211,7 @@ def parse_text(text, username, message_id):
                 action_list.append('🔎Поиск соперника')
 
             elif taverna_enabled and gold >= 13 and orders['taverna'] not in action_list and \
-                    (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(3)) and\
-                                    time() - lt_arena > 3600:
+                    (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(3)):
                 action_list.append(orders['taverna'])
 
         elif arena_enabled and text.find('выбери точку атаки и точку защиты') != -1:
