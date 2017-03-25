@@ -225,7 +225,7 @@ def parse_text(text, username, message_id):
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
 
-        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text:
+        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text:
             f = open('smth.txt', 'a')
             f.write("##______##\n\n")
             f.write(text)
