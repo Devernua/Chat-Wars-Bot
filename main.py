@@ -112,8 +112,8 @@ def work_with_message(receiver):
     while True:
         msg = (yield)
         try:
-            if msg['event'] == 'message' and 'text' in msg and msg['peer_type'] is not None:
-                parse_text(msg['text'], msg['from']['username'], msg['id'])
+            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None:
+                parse_text(msg['text'], msg['sender']['username'], msg['id'])
         except Exception as err:
             log('Ошибка coroutine: {0}'.format(err))
 
@@ -399,7 +399,7 @@ def log(text):
 
 
 if __name__ == '__main__':
-    receiver = Receiver(host=host, port=port)
+    receiver = Receiver(sock=socket_path) if socket_path else Receiver(port=port)
     receiver.start()  # start the Connector.
     _thread.start_new_thread(queue_worker, ())
     receiver.message(work_with_message(receiver))
