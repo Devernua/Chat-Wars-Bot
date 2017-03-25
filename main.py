@@ -179,7 +179,7 @@ def parse_text(text, username, message_id):
         elif corovan_enabled and text.find(' /go') != -1:
             action_list.append(orders['corovan'])
 
-        elif text.find('Сражаться можно не чаще чем один раз в час.'):
+        elif text.find('Сражаться можно не чаще чем один раз в час.') != -1:
             lt_arena = time()
             action_list.append(orders['hero'])
 
