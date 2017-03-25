@@ -23,13 +23,15 @@ order_usernames = ''
 # имя замка
 castle_name = 'blue'
 
+captcha_bot = 'ChatWarsCaptchaBot'
+
 # путь к сокет файлу
 socket_path = ''
 
 # хост чтоб слушать telegram-cli
 host = 'localhost'
 
-# порт по которому сшулать
+# порт по которому слушать
 port = 1338
 
 opts, args = getopt(sys.argv[1:], 'a:o:c:s:h:p', ['admin=', 'order=', 'castle=', 'socket=', 'host=', 'port='])
@@ -94,7 +96,8 @@ action_list = deque([])
 log_list = deque([], maxlen=30)
 lt_arena = 0
 get_info_diff = 360
-hero_message_id = ''
+hero_message_id = 0
+last_captcha_id = 0
 
 bot_enabled = True
 arena_enabled = True
@@ -102,7 +105,7 @@ les_enabled = True
 corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
-
+donate_enabled = False
 
 @coroutine
 def work_with_message(receiver):
@@ -118,6 +121,9 @@ def work_with_message(receiver):
 def queue_worker():
     global get_info_diff
     lt_info = 0
+    # гребаная магия
+    print(sender.contacts_search(bot_username))
+    sleep(3)
     while True:
         try:
             if time() - lt_info > get_info_diff:
@@ -145,19 +151,25 @@ def parse_text(text, username, message_id):
     global corovan_enabled
     global order_enabled
     global auto_def_enabled
+    global donate_enabled
+    global last_captcha_id
     if bot_enabled and username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
 
         if "На выходе из замка охрана никого не пропускает" in text:
-            send_msg(admin_username, "Командир, у нас проблемы. Опять кольцов со своей говнокапчей! Ответь мне! #captcha " + '|'.join(captcha_answers.keys()))
-            fwd(admin_username, message_id)
+            # send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
+            # fwd(admin_username, message_id)
+            last_captcha_id = message_id
+            fwd(captcha_bot, message_id)
+            # bot_enabled = False
+
+        elif 'Не умничай!' in text or 'Ты долго думал, аж вспотел от напряжения' in text:
+            send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
             bot_enabled = False
-
-            #if "Ты-то помнишь," in text:
-            #    print('')
-
-            #elif " гоняясь за " in text:
-            #    print('')
+            if last_captcha_id != 0:
+                fwd(admin_username, message_id)
+            else:
+                send_msg(admin_username, 'Капча не найдена?')
 
         elif corovan_enabled and text.find(' /go') != -1:
             action_list.append(orders['corovan'])
@@ -167,15 +179,15 @@ def parse_text(text, username, message_id):
             m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
             if not m.group(1):
                 if m.group(2) and int(m.group(2)) <= 59:
-                    # send_msg(admin_username, 'До битвы ' + m.group(2) + ' минут(ы)!')
-                    # прекращаем все действия
                     state = re.search('Состояние:\\n(.*)$', text)
                     if auto_def_enabled and time() - current_order['time'] > 3600:
+                        if donate_enabled:
+                            gold = int(re.search('💰([0-9]+)', text).group(1))
+                            log('Донат {0} золота в казну замка'.format(gold))
+                            action_list.append('/donate {0}'.format(gold))
                         update_order(castle)
                     return
             log('Времени достаточно')
-            # теперь узнаем, сколько у нас выносливости и золота
-            # m = re.search('Золото: (-*[0-9]+)\\n.*Выносливость: ([0-9]+) из', text)
             gold = int(re.search('💰([0-9]+)', text).group(1))
             endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
             log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
@@ -191,6 +203,12 @@ def parse_text(text, username, message_id):
             log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
+
+    elif username == 'ChatWarsCaptchaBot':
+        if len(text) <= 4 and text in captcha_answers.values():
+            sleep(3)
+            action_list.append(text)
+            #bot_enabled = True
 
     else:
         if bot_enabled and order_enabled and username in order_usernames:
@@ -228,6 +246,8 @@ def parse_text(text, username, message_id):
                     '#disable_order - Выключить приказы',
                     '#enable_auto_def - Включить авто деф',
                     '#disable_auto_def - Выключить авто деф',
+                    '#enable_donate - Включить донат',
+                    '#disable_donate - Выключить донат',
                     '#status - Получить статус',
                     '#hero - Получить информацию о герое',
                     '#push_order - Добавить приказ ({0})'.format(','.join(orders)),
@@ -287,6 +307,14 @@ def parse_text(text, username, message_id):
                 auto_def_enabled = False
                 send_msg(admin_username, 'Авто деф успешно выключен')
 
+            # Вкл/выкл авто донат
+            elif text == '#enable_donate':
+                donate_enabled = True
+                send_msg(admin_username, 'Донат успешно включен')
+            elif text == '#disable_donate':
+                donate_enabled = False
+                send_msg(admin_username, 'Донат успешно выключен')
+
             # Получить статус
             elif text == '#status':
                 send_msg(admin_username, '\n'.join([
@@ -296,11 +324,15 @@ def parse_text(text, username, message_id):
                     'Корованы включены: {3}',
                     'Приказы включены: {4}',
                     'Авто деф включен: {5}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled))
+                    'Донат включен: {5}',
+                ]).format(bot_enabled, arena_enabled, les_enabled, corovan_enabled, order_enabled, auto_def_enabled, donate_enabled))
 
             # Информация о герое
             elif text == '#hero':
-                fwd(admin_username, hero_message_id)
+                if hero_message_id == 0:
+                    send_msg(admin_username, 'Информация о герое пока еще недоступна')
+                else:
+                    fwd(admin_username, hero_message_id)
 
             # Получить лог
             elif text == '#log':
@@ -340,7 +372,6 @@ def parse_text(text, username, message_id):
                     send_msg(admin_username, 'Команда ' + command + ' применена')
                 else:
                     send_msg(admin_username, 'Команда ' + command + ' не распознана')
-
 
 
 def send_msg(to, message):
