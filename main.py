@@ -6,7 +6,7 @@ from collections import deque
 from time import time, sleep
 from getopt import getopt
 import sys
-import datetime
+import datetime as dt
 import re
 import _thread
 import random
@@ -65,7 +65,8 @@ orders = {
     'cover_symbol': '🛡',
     'hero': '🏅Герой',
     'corovan': '/go',
-    'peshera': '🕸Пещера'
+    'peshera': '🕸Пещера',
+    'taverna': ':beer:Взять кружку эля'
 }
 
 captcha_answers = {
@@ -101,6 +102,7 @@ last_captcha_id = 0
 
 bot_enabled = True
 arena_enabled = True
+taverna_enabled = True
 les_enabled = True
 peshera_enabled = False
 corovan_enabled = True
@@ -148,6 +150,7 @@ def parse_text(text, username, message_id):
     global hero_message_id
     global bot_enabled
     global arena_enabled
+    global taverna_enabled
     global les_enabled
     global peshera_enabled
     global corovan_enabled
@@ -193,12 +196,20 @@ def parse_text(text, username, message_id):
             gold = int(re.search('💰([0-9]+)', text).group(1))
             endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
             log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
+
             if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                 action_list.append(orders['peshera'])
+
             elif les_enabled and endurance >= 1 and orders['les'] not in action_list:
                 action_list.append(orders['les'])
+
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                 action_list.append('🔎Поиск соперника')
+
+            elif taverna_enabled and gold >= 13 and orders['taverna'] not in action_list and \
+                    (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(3)) and\
+                                    time() - lt_arena > 3600:
+                action_list.append(orders['taverna'])
 
         elif arena_enabled and text.find('выбери точку атаки и точку защиты') != -1:
             lt_arena = time()
@@ -207,6 +218,11 @@ def parse_text(text, username, message_id):
             log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
+
+        else:
+            f = open('smth.txt', 'a')
+            f.write("##______##\n\n")
+            f.write(text)
 
     elif username == 'ChatWarsCaptchaBot':
         if len(text) <= 4 and text in captcha_answers.values():
@@ -242,6 +258,8 @@ def parse_text(text, username, message_id):
                     '#disable_bot - Выключить бота',
                     '#enable_arena - Включить арену',
                     '#disable_arena - Выключить арену',
+                    '#disable_taverna - Выключить таверну',
+                    '#enable_taverna - Влючить таверну',
                     '#enable_les - Включить лес',
                     '#disable_les - Выключить лес',
                     '#enable_peshera - Включить пещеры',
@@ -280,6 +298,14 @@ def parse_text(text, username, message_id):
             elif text == '#disable_arena':
                 arena_enabled = False
                 send_msg(admin_username, 'Арена успешно выключена')
+
+            # Вкл/выкл таверны
+            elif text == '#enable_taverna':
+                taverna_enabled = True
+                send_msg(admin_username, 'Таверна успешно включена')
+            elif text == '#disable_taverna':
+                taverna_enabled = False
+                send_msg(admin_username, 'Таверна успешно выключена')
 
             # Вкл/выкл леса
             elif text == '#enable_les':
@@ -340,7 +366,8 @@ def parse_text(text, username, message_id):
                     'Приказы включены: {5}',
                     'Авто деф включен: {6}',
                     'Донат включен: {7}',
-                ]).format(bot_enabled, arena_enabled, les_enabled, peshera_enabled, corovan_enabled, order_enabled, auto_def_enabled, donate_enabled))
+                    'Таверна включена: {8}'
+                ]).format(bot_enabled, arena_enabled, les_enabled, peshera_enabled, corovan_enabled, order_enabled, auto_def_enabled, donate_enabled, taverna_enabled))
 
             # Информация о герое
             elif text == '#hero':
@@ -358,11 +385,11 @@ def parse_text(text, username, message_id):
                 send_msg(admin_username, str(lt_arena))
 
             elif text == '#order':
-                text_date = datetime.datetime.fromtimestamp(current_order['time']).strftime('%Y-%m-%d %H:%M:%S')
+                text_date = dt.datetime.fromtimestamp(current_order['time']).strftime('%Y-%m-%d %H:%M:%S')
                 send_msg(admin_username, current_order['order'] + ' ' + text_date)
 
             elif text == '#time':
-                text_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                text_date = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 send_msg(admin_username, text_date)
 
             elif text == '#ping':
@@ -408,7 +435,7 @@ def update_order(order):
 
 
 def log(text):
-    message = '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()) + ' ' + text
+    message = '{0:%Y-%m-%d %H:%M:%S}'.format(dt.datetime.now()) + ' ' + text
     print(message)
     log_list.append(message)
 
