@@ -131,7 +131,7 @@ def queue_worker():
         try:
             if time() - lt_info > get_info_diff:
                 lt_info = time()
-                get_info_diff = random.randint(400, 800)
+                get_info_diff = random.randint(300, 500)
                 if bot_enabled:
                     send_msg(bot_username, orders['hero'])
                 continue
@@ -178,6 +178,10 @@ def parse_text(text, username, message_id):
 
         elif corovan_enabled and text.find(' /go') != -1:
             action_list.append(orders['corovan'])
+
+        elif text.find('Сражаться можно не чаще чем один раз в час.'):
+            lt_arena = time()
+            action_list.append(orders['hero'])
 
         elif text.find('Битва пяти замков через') != -1:
             hero_message_id = message_id
