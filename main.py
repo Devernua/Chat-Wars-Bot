@@ -147,6 +147,7 @@ def queue_worker():
 
 def parse_text(text, username, message_id):
     global lt_arena
+    global lt_info
     global hero_message_id
     global bot_enabled
     global arena_enabled
@@ -210,6 +211,7 @@ def parse_text(text, username, message_id):
 
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                 action_list.append('🔎Поиск соперника')
+                lt_arena = time()
 
             elif taverna_enabled and gold >= 13 and orders['taverna'] not in action_list and \
                     (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(3)):
@@ -223,7 +225,7 @@ def parse_text(text, username, message_id):
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
 
-        else:
+        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text:
             f = open('smth.txt', 'a')
             f.write("##______##\n\n")
             f.write(text)
