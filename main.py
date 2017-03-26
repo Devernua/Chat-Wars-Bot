@@ -129,6 +129,8 @@ def queue_worker():
     sleep(3)
     while True:
         try:
+            #todo: check battle time
+
             if time() - lt_info > get_info_diff:
                 lt_info = time()
                 get_info_diff = random.randint(300, 500)
@@ -203,6 +205,16 @@ def parse_text(text, username, message_id):
             endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
             log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
 
+            if text.find('/level_up') != -1:
+                damage = int(re.search('Атака: ([0-9]+)', text).group(1))
+                defence = int(re.search('Защита: ([0-9]+)', text).group(1))
+                action_list.append('/level_up')
+                log('level_up')
+                if damage > defence:
+                    action_list.append('+1 ' + orders['attack'])
+                else:
+                    action_list.append('+1 ' + orders['cover'])
+
             if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                 action_list.append(orders['peshera'])
 
@@ -225,7 +237,7 @@ def parse_text(text, username, message_id):
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
 
-        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text:
+        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text and "Ветер завывает" not in text:
             f = open('smth.txt', 'a')
             f.write("##______##\n\n")
             f.write(text)
@@ -433,6 +445,7 @@ def fwd(to, message_id):
 
 
 def update_order(order):
+    #TODO:
     current_order['order'] = order
     current_order['time'] = time()
     if order == castle:
