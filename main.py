@@ -128,6 +128,7 @@ def queue_worker():
     print(sender.contacts_search(bot_username))
     sleep(3)
     while True:
+	#TODO: check battle time
         try:
             if time() - lt_info > get_info_diff:
                 lt_info = time()
@@ -225,7 +226,7 @@ def parse_text(text, username, message_id):
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
 
-        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text:
+        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text and "Ветер завывает" not in text:
             f = open('smth.txt', 'a')
             f.write("##______##\n\n")
             f.write(text)
@@ -426,13 +427,14 @@ def parse_text(text, username, message_id):
 
 def send_msg(to, message):
     sender.send_msg('@' + to, message)
-
+    sender.mark_read('@'+ to)
 
 def fwd(to, message_id):
     sender.fwd('@' + to, message_id)
 
 
 def update_order(order):
+    #TODO:
     current_order['order'] = order
     current_order['time'] = time()
     if order == castle:

@@ -1,0 +1,43 @@
+unbeman = {
+ config_directory = ".telegram-cli/unbeman";
+}
+
+devernua = {
+ config_directory = ".telegram-cli/devernua";
+}
+
+petles = {
+ config_directory = ".telegram-cli/petles";
+}
+
+tittodritto = {
+ config_directory = ".telegram-cli/tittodritto";
+}
+
+annaras = {
+ config_directory = ".telegram-cli/annaras";
+} 
+
+jessy =  {
+        config_directory = ".telegram-cli/jessy";
+}
+
+ufolog =  {
+        config_directory = ".telegram-cli/ufolog";
+}
+
+azzik =  {
+        config_directory = ".telegram-cli/azzik";
+}
+
+emptyn =  {
+        config_directory = ".telegram-cli/emptyn";
+}
+
+pefed =  {
+        config_directory = ".telegram-cli/pefed";
+}
+
+pevas =  {
+        config_directory = ".telegram-cli/pevas";
+}
