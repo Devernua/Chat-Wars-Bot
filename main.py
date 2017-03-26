@@ -14,6 +14,8 @@ import random
 # username игрового бота
 bot_username = 'ChatWarsBot'
 
+stock_bot = 'WarChatsEquip_bot'
+
 # ваш username или username человека, который может отправлять запросы этому скрипту
 admin_username = ''
 
@@ -213,6 +215,9 @@ def parse_text(text, username, message_id):
             action_list.append(attack_chosen)
             action_list.append(cover_chosen)
 
+        elif text.find('Содержимое склада') != -1:
+            fwd(stock_bot, message_id)
+
         else:
             f = open('smth.txt', 'a')
             f.write("##______##\n\n")
@@ -264,6 +269,7 @@ def parse_text(text, username, message_id):
                     '#disable_auto_def - Выключить авто деф',
                     '#enable_donate - Включить донат',
                     '#disable_donate - Выключить донат',
+                    '#update_stock - обновить сток',
                     '#status - Получить статус',
                     '#hero - Получить информацию о герое',
                     '#push_order - Добавить приказ ({0})'.format(','.join(orders)),
@@ -338,6 +344,9 @@ def parse_text(text, username, message_id):
             elif text == '#disable_donate':
                 donate_enabled = False
                 send_msg(admin_username, 'Донат успешно выключен')
+
+            elif text == '#update_stock':
+                action_list.append('/stock')
 
             # Получить статус
             elif text == '#status':
