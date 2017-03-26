@@ -128,6 +128,7 @@ def queue_worker():
     print(sender.contacts_search(bot_username))
     sleep(3)
     while True:
+	#TODO: check battle time
         try:
             #todo: check battle time
 
@@ -438,7 +439,7 @@ def parse_text(text, username, message_id):
 
 def send_msg(to, message):
     sender.send_msg('@' + to, message)
-
+    sender.mark_read('@'+ to)
 
 def fwd(to, message_id):
     sender.fwd('@' + to, message_id)
