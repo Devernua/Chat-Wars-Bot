@@ -214,7 +214,7 @@ def parse_text(text, username, message_id):
                 if damage > defence:
                     action_list.append('+1 ⚔Атака')
                 else:
-                    action_list.append('+1 🛡Защитa')
+                    action_list.append('+1 🛡Защита')
 
             if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                 action_list.append(orders['peshera'])
