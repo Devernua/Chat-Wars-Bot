@@ -206,7 +206,7 @@ def parse_text(text, username, message_id):
             endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
             log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
 
-            if text.find('/level_up') != -1:
+            if text.find('/level_up') != -1 and '/level_up' not in action_list:
                 damage = int(re.search('Атака: ([0-9]+)', text).group(1))
                 defence = int(re.search('Защита: ([0-9]+)', text).group(1))
                 action_list.append('/level_up')
