@@ -192,7 +192,7 @@ def parse_text(text, username, message_id):
             hero_message_id = message_id
             m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
             if not m.group(1):
-                if m.group(2) and int(m.group(2)) <= 59:
+                if m.group(2) and int(m.group(2)) <= 30:
                     state = re.search('Состояние:\\n(.*)$', text)
                     if auto_def_enabled and time() - current_order['time'] > 3600:
                         if donate_enabled:
@@ -212,9 +212,9 @@ def parse_text(text, username, message_id):
                 action_list.append('/level_up')
                 log('level_up')
                 if damage > defence:
-                    action_list.append('+1 ' + orders['attack'])
+                    action_list.append('+1 ⚔Атака')
                 else:
-                    action_list.append('+1 ' + orders['cover'])
+                    action_list.append('+1 🛡Защитa')
 
             if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                 action_list.append(orders['peshera'])
@@ -227,7 +227,7 @@ def parse_text(text, username, message_id):
                 lt_arena = time()
 
             elif taverna_enabled and gold >= 13 and orders['taverna'] not in action_list and \
-                    (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(3)):
+                    (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(6)):
                 action_list.append(orders['taverna'])
 
         elif arena_enabled and text.find('выбери точку атаки и точку защиты') != -1:
@@ -242,9 +242,14 @@ def parse_text(text, username, message_id):
             fwd(stock_bot, message_id)
 
         elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text and "Ветер завывает" not in text:
-            f = open('smth.txt', 'a')
-            f.write("##______##\n\n")
-            f.write(text)
+            with open('smt.txt', 'a+') as f:
+                f.seek(0)
+                for line in f:
+                    if text in line:
+                        break
+                else:
+                    f.write(text + '\n')
+                    
             action_list.append(orders['hero'])
             lt_info = time()
 
