@@ -176,7 +176,7 @@ def parse_text(text, username, message_id):
             send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
             bot_enabled = False
             if last_captcha_id != 0:
-                fwd(admin_username, message_id)
+                fwd(admin_username, last_captcha_id)
             else:
                 send_msg(admin_username, 'Капча не найдена?')
 
@@ -224,7 +224,6 @@ def parse_text(text, username, message_id):
 
             elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                 action_list.append('🔎Поиск соперника')
-                lt_arena = time()
 
             elif taverna_enabled and gold >= 13 and orders['taverna'] not in action_list and \
                     (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(6)):
