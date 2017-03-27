@@ -245,7 +245,7 @@ def parse_text(text, username, message_id):
             with open('smt.txt', 'a+') as f:
                 f.seek(0)
                 for line in f:
-                    if text[0:12] in line:
+                    if text[0:9] in line:
                         break
                 else:
                     f.write(text + '\n')
