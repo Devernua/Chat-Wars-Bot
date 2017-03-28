@@ -219,7 +219,7 @@ def parse_text(text, username, message_id):
             elif text.find('Битва пяти замков через') != -1:
                 hero_message_id = message_id
                 m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
-                state = re.search('Состояние:\\n(.*)$', text)
+                state = re.search('Состояние:\\n(.*)\\n', text)
                 if not m.group(1):
                     if m.group(2) and int(m.group(2)) <= 30:
                         if auto_def_enabled and time() - current_order['time'] > 3600:
@@ -229,7 +229,7 @@ def parse_text(text, username, message_id):
                                 action_list.append('/donate {0}'.format(gold))
                             update_order(castle)
                         return
-                if states_map['relax'] not in state.group(1) or states_map['defense'] not in state.group(1) or\
+                if states_map['relax'] not in state.group(1) and states_map['defense'] not in state.group(1) and\
                         states_map['attack'] not in state.group(1):
                     return
 
@@ -272,7 +272,10 @@ def parse_text(text, username, message_id):
             elif text.find('Содержимое склада') != -1:
                 fwd(stock_bot, message_id)
 
-            elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text and "Ветер завывает" not in text:
+            elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and\
+                            "Ты сейчас занят" not in text and "Ветер завывает" not in text and \
+                            "Соперник найден" not in text and "Синий замок" not in text and \
+                            "Синего замка" not in text and "Общение внутри замка" not in text:
                 with open('taverna.txt', 'a+') as f:
                     f.seek(0)
                     for line in f:
