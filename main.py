@@ -179,6 +179,9 @@ def parse_text(text, username, message_id):
                 fwd(admin_username, last_captcha_id)
             else:
                 send_msg(admin_username, 'Капча не найдена?')
+        elif 'Ты слишком устал, возвращайся когда отдохнешь.' in text:
+            send_msg(admin_username, "Не угадали с капчей, вырубаю бота")
+            bot_enabled = False
 
         elif corovan_enabled and text.find(' /go') != -1:
             action_list.append(orders['corovan'])
