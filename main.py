@@ -87,6 +87,16 @@ captcha_answers = {
     'squirrel': '🐿'
 }
 
+states_map = {
+    'relax': '🛌Отдых',
+    'defense': '🛡Защита',
+    'attack': '⚔Атака',
+    'arena': '📯На арене',
+    'les': '🌲В лесу',
+    'peshera': '🕸В пещере',
+    'taverna': '🍺Пьешь в таверне'
+}
+
 arena_cover = ['🛡головы', '🛡корпуса', '🛡ног']
 arena_attack = ['🗡в голову', '🗡по корпусу', '🗡по ногам']
 # поменять blue на red, black, white, yellow в зависимости от вашего замка
@@ -162,104 +172,122 @@ def parse_text(text, username, message_id):
     global auto_def_enabled
     global donate_enabled
     global last_captcha_id
-    if bot_enabled and username == bot_username:
+    if username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
 
         if "На выходе из замка охрана никого не пропускает" in text:
-            # send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
-            # fwd(admin_username, message_id)
+            with open('captcha.txt', 'a+') as f:
+                f.seek(0)
+                for line in f:
+                    if text in line:
+                        break
+                else:
+                    f.write(text + '\n' + '-'*8 + '\n')
+
+            action_list.clear()
+            send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
+            fwd(admin_username, message_id)
             last_captcha_id = message_id
             fwd(captcha_bot, message_id)
-            # bot_enabled = False
+            bot_enabled = False
 
-        elif 'Не умничай!' in text or 'Ты долго думал, аж вспотел от напряжения' in text:
+        elif 'Не умничай!' in text or 'Ты долго думал, аж вспотел от напряжения' in text or 'Не шути со стражниками' in text:
             send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
             bot_enabled = False
             if last_captcha_id != 0:
                 fwd(admin_username, last_captcha_id)
             else:
                 send_msg(admin_username, 'Капча не найдена?')
+
         elif 'Ты слишком устал, возвращайся когда отдохнешь.' in text:
             send_msg(admin_username, "Не угадали с капчей, вырубаю бота")
             bot_enabled = False
 
-        elif corovan_enabled and text.find(' /go') != -1:
-            action_list.append(orders['corovan'])
+        elif 'Ты ответил правильно' in text:
+            send_msg(admin_username, "Ура, угадали капчу! Запускаю бота")
+            bot_enabled = True
 
-        elif text.find('Сражаться можно не чаще чем один раз в час.') != -1:
-            lt_arena = time()
-            lt_info = time()
-            action_list.append(orders['hero'])
+        if bot_enabled:
+            if corovan_enabled and text.find(' /go') != -1:
+                action_list.append(orders['corovan'])
 
-        elif text.find('Битва пяти замков через') != -1:
-            hero_message_id = message_id
-            m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
-            if not m.group(1):
-                if m.group(2) and int(m.group(2)) <= 30:
-                    state = re.search('Состояние:\\n(.*)$', text)
-                    if auto_def_enabled and time() - current_order['time'] > 3600:
-                        if donate_enabled:
-                            gold = int(re.search('💰([0-9]+)', text).group(1))
-                            log('Донат {0} золота в казну замка'.format(gold))
-                            action_list.append('/donate {0}'.format(gold))
-                        update_order(castle)
+            elif text.find('Сражаться можно не чаще чем один раз в час.') != -1:
+                lt_arena = time()
+
+            elif text.find('Битва пяти замков через') != -1:
+                hero_message_id = message_id
+                m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
+                state = re.search('Состояние:\\n(.*)$', text)
+                if not m.group(1):
+                    if m.group(2) and int(m.group(2)) <= 30:
+                        if auto_def_enabled and time() - current_order['time'] > 3600:
+                            if donate_enabled:
+                                gold = int(re.search('💰([0-9]+)', text).group(1))
+                                log('Донат {0} золота в казну замка'.format(gold))
+                                action_list.append('/donate {0}'.format(gold))
+                            update_order(castle)
+                        return
+                if states_map['relax'] not in state.group(1) or states_map['defense'] not in state.group(1) or\
+                        states_map['attack'] not in state.group(1):
                     return
-            log('Времени достаточно')
-            gold = int(re.search('💰([0-9]+)', text).group(1))
-            endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
-            log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
 
-            if text.find('/level_up') != -1 and '/level_up' not in action_list:
-                damage = int(re.search('Атака: ([0-9]+)', text).group(1))
-                defence = int(re.search('Защита: ([0-9]+)', text).group(1))
-                action_list.append('/level_up')
-                log('level_up')
-                if damage > defence:
-                    action_list.append('+1 ⚔Атака')
-                else:
-                    action_list.append('+1 🛡Защита')
+                log('Времени достаточно')
+                gold = int(re.search('💰([0-9]+)', text).group(1))
+                endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
+                log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
 
-            if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
-                action_list.append(orders['peshera'])
+                if text.find('/level_up') != -1 and '/level_up' not in action_list:
+                    damage = int(re.search('Атака: ([0-9]+)', text).group(1))
+                    defence = int(re.search('Защита: ([0-9]+)', text).group(1))
+                    action_list.append('/level_up')
+                    log('level_up')
+                    if damage > defence:
+                        action_list.append('+1 ⚔Атака')
+                    else:
+                        action_list.append('+1 🛡Защита')
 
-            elif les_enabled and endurance >= 1 and orders['les'] not in action_list:
-                action_list.append(orders['les'])
+                if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
+                    action_list.append(orders['peshera'])
 
-            elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
-                action_list.append('🔎Поиск соперника')
+                elif les_enabled and endurance >= 1 and orders['les'] not in action_list:
+                    action_list.append(orders['les'])
 
-            elif taverna_enabled and gold >= 13 and orders['taverna'] not in action_list and \
-                    (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(6)):
-                action_list.append(orders['taverna'])
+                elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
+                    action_list.append('🔎Поиск соперника')
 
-        elif arena_enabled and text.find('выбери точку атаки и точку защиты') != -1:
-            lt_arena = time()
-            attack_chosen = arena_attack[random.randint(0, 2)]
-            cover_chosen = arena_cover[random.randint(0, 2)]
-            log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
-            action_list.append(attack_chosen)
-            action_list.append(cover_chosen)
+                elif taverna_enabled and gold >= 20 and orders['taverna'] not in action_list and \
+                        (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(6)):
+                    action_list.append(orders['taverna'])
 
-        elif text.find('Содержимое склада') != -1:
-            fwd(stock_bot, message_id)
+            elif arena_enabled and text.find('выбери точку атаки и точку защиты') != -1:
+                lt_arena = time()
+                attack_chosen = arena_attack[random.randint(0, 2)]
+                cover_chosen = arena_cover[random.randint(0, 2)]
+                log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
+                action_list.append(attack_chosen)
+                action_list.append(cover_chosen)
 
-        elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text and "Ветер завывает" not in text:
-            with open('smt.txt', 'a+') as f:
-                f.seek(0)
-                for line in f:
-                    if text[0:9] in line:
-                        break
-                else:
-                    f.write(text + '\n')
+            elif text.find('Содержимое склада') != -1:
+                fwd(stock_bot, message_id)
 
-            action_list.append(orders['hero'])
-            lt_info = time()
+            elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and "Ты сейчас занят" not in text and "Ветер завывает" not in text:
+                with open('taverna.txt', 'a+') as f:
+                    f.seek(0)
+                    for line in f:
+                        if text[0:8] in line:
+                            break
+                    else:
+                        f.write(text + '\n')
+
+                action_list.append(orders['hero'])
+                lt_info = time()
 
     elif username == 'ChatWarsCaptchaBot':
         if len(text) <= 4 and text in captcha_answers.values():
             sleep(3)
+            action_list.clear()
             action_list.append(text)
-            #bot_enabled = True
+            bot_enabled = True
 
     else:
         if bot_enabled and order_enabled and username in order_usernames:
@@ -444,6 +472,7 @@ def parse_text(text, username, message_id):
             elif text.startswith('#captcha'):
                 command = text.split(' ')[1]
                 if command in captcha_answers:
+                    action_list.clear()
                     action_list.append(captcha_answers[command])
                     bot_enabled = True
                     send_msg(admin_username, 'Команда ' + command + ' применена')
@@ -452,8 +481,8 @@ def parse_text(text, username, message_id):
 
 
 def send_msg(to, message):
+    sender.mark_read('@' + to)
     sender.send_msg('@' + to, message)
-    sender.mark_read('@'+ to)
 
 
 def fwd(to, message_id):
