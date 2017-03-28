@@ -122,6 +122,7 @@ order_enabled = True
 auto_def_enabled = True
 donate_enabled = False
 
+
 @coroutine
 def work_with_message(receiver):
     while True:
@@ -182,7 +183,7 @@ def parse_text(text, username, message_id):
                     if text in line:
                         break
                 else:
-                    f.write(text + '\n' + '-'*8 + '\n')
+                    f.write(text + '\n' + '-' * 8 + '\n')
 
             action_list.clear()
             send_msg(admin_username, "Командир, у нас проблемы с капчой! #captcha " + '|'.join(captcha_answers.keys()))
@@ -229,8 +230,8 @@ def parse_text(text, username, message_id):
                                 action_list.append('/donate {0}'.format(gold))
                             update_order(castle)
                         return
-                if states_map['relax'] not in state.group(1) and states_map['defense'] not in state.group(1) and\
-                        states_map['attack'] not in state.group(1):
+                if states_map['relax'] not in state.group(1) and states_map['defense'] not in state.group(1) and \
+                                states_map['attack'] not in state.group(1):
                     return
 
                 log('Времени достаточно')
@@ -272,7 +273,7 @@ def parse_text(text, username, message_id):
             elif text.find('Содержимое склада') != -1:
                 fwd(stock_bot, message_id)
 
-            elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and\
+            elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and \
                             "Ты сейчас занят" not in text and "Ветер завывает" not in text and \
                             "Соперник найден" not in text and "Синий замок" not in text and \
                             "Синего замка" not in text and "Общение внутри замка" not in text:
@@ -285,8 +286,6 @@ def parse_text(text, username, message_id):
                         f.write(text + '\n')
                 action_list.append(orders['hero'])
                 lt_info = time()
-
-
 
     elif username == 'ChatWarsCaptchaBot':
         if len(text) <= 4 and text in captcha_answers.values():
@@ -314,7 +313,7 @@ def parse_text(text, username, message_id):
             elif text.find('🛡') != -1:
                 update_order(castle)
 
-            # send_msg(admin_username, 'Получили команду ' + current_order['order'] + ' от ' + username)
+                # send_msg(admin_username, 'Получили команду ' + current_order['order'] + ' от ' + username)
 
         if username == admin_username:
             if text == '#help':
@@ -436,7 +435,8 @@ def parse_text(text, username, message_id):
                     'Авто деф включен: {6}',
                     'Донат включен: {7}',
                     'Таверна включена: {8}'
-                ]).format(bot_enabled, arena_enabled, les_enabled, peshera_enabled, corovan_enabled, order_enabled, auto_def_enabled, donate_enabled, taverna_enabled))
+                ]).format(bot_enabled, arena_enabled, les_enabled, peshera_enabled, corovan_enabled, order_enabled,
+                          auto_def_enabled, donate_enabled, taverna_enabled))
 
             # Информация о герое
             elif text == '#hero':
