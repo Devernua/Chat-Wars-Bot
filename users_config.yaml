@@ -1,0 +1,33 @@
+- emptyn:
+    admin: devernua
+    port: 1338
+- devernua:
+    admin: unbeman
+    port: 1339
+- jessy:
+    admin: unbeman
+    port: 1340
+- azzik:
+    admin: unbeman
+    port: 1341
+- petles:
+    admin: devernua
+    port: 1342
+- annaras:
+    admin: unbeman
+    port: 1343
+- ufolog:
+    admin: unbeman
+    port: 1344
+- tittodritto:
+    admin: devernua
+    port: 1345
+- pefed:
+    admin: devernua
+    port: 1346
+- unbeman:
+    admin: devernua
+    port: 1347
+- pevas:
+    admin: devernua
+    port: 1348
