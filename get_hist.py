@@ -11,7 +11,8 @@ for opt, arg in opts:
 
 
 sender = Sender(host="localhost", port=port)
-hist = sender.history('@ChatWarsBot')
-with open('history.txt') as f:
+print(sender.contacts_search('ChatWarsBot'))
+hist = sender.messages_search('@ChatWarsBot', 'На выходе')
+with open('history.txt', 'a') as f:
     for d in hist:
         f.write(d['text'] + '\n' + '-'*8)
