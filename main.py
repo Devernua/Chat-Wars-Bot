@@ -139,6 +139,8 @@ def queue_worker():
     lt_info = 0
     # гребаная магия
     print(sender.contacts_search(bot_username))
+    print(sender.contacts_search(admin_username))
+    print(sender.contacts_search(stock_bot))
     sleep(3)
     while True:
         try:
