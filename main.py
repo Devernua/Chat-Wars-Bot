@@ -138,9 +138,10 @@ def queue_worker():
     global get_info_diff
     lt_info = 0
     # гребаная магия
-    print(sender.contacts_search(bot_username))
-    print(sender.contacts_search(admin_username))
-    print(sender.contacts_search(stock_bot))
+    #print(sender.contacts_search(bot_username))
+    #print(sender.contacts_search(admin_username))
+    #print(sender.contacts_search(stock_bot))
+    sender.dialog_list()
     sleep(3)
     while True:
         try:
@@ -254,7 +255,7 @@ def parse_text(text, username, message_id):
                 if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                     action_list.append(orders['peshera'])
 
-                elif les_enabled and endurance >= 1 and orders['les'] not in action_list:
+                elif les_enabled and endurance >= 2 and orders['les'] not in action_list:
                     action_list.append(orders['les'])
 
                 elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
@@ -454,14 +455,14 @@ def parse_text(text, username, message_id):
                 log_list.clear()
 
             elif text == '#lt_arena':
-                send_msg(admin_username, str(lt_arena))
+                send_msg(admin_username, str(dt.datetime.fromtimestamp(lt_arena).time()))
 
             elif text == '#order':
-                text_date = dt.datetime.fromtimestamp(current_order['time']).strftime('%Y-%m-%d %H:%M:%S')
+                text_date = str(dt.datetime.fromtimestamp(current_order['time']).time())
                 send_msg(admin_username, current_order['order'] + ' ' + text_date)
 
             elif text == '#time':
-                text_date = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                text_date = str(dt.datetime.now().time())
                 send_msg(admin_username, text_date)
 
             elif text == '#ping':
