@@ -66,7 +66,7 @@ orders = {
     'attack': '⚔ Атака',
     'cover_symbol': '🛡',
     'hero': '👨‍🚀 Пилот',
-    'corovan': '/go',
+    'corovan': '/intercept',
     'peshera': '🕸Пещера',
     'taverna': '🍺Взять кружку эля',
     'star_corovan_grab': '🐫ГРАБИТЬ КОСМИЧЕСКИЕ КОРОВАНЫ'
@@ -124,7 +124,7 @@ peshera_enabled = False
 corovan_enabled = True
 star_corovan_grab_enabled = True
 order_enabled = True
-auto_def_enabled = True
+auto_def_enabled = False
 donate_enabled = False
 
 
@@ -143,9 +143,6 @@ def queue_worker():
     global get_info_diff
     lt_info = 0
     # гребаная магия
-    #print(sender.contacts_search(bot_username))
-    #print(sender.contacts_search(admin_username))
-    #print(sender.contacts_search(stock_bot))
     sender.dialog_list()
     sleep(3)
     while True:
@@ -218,7 +215,7 @@ def parse_text(text, username, message_id):
             bot_enabled = True
 
         if bot_enabled:
-            if corovan_enabled and text.find(' /go') != -1:
+            if corovan_enabled and text.find(' /intercept') != -1:
                 action_list.append(orders['corovan'])
 
             elif text.find('Сражаться можно не чаще чем один раз в час.') != -1:
@@ -226,7 +223,7 @@ def parse_text(text, username, message_id):
                 lt_info = time()
                 action_list.append(orders['hero'])
 
-            elif text.find('Космическая битва через') != -1:
+            elif text.find('Космическая битва через ') != -1:
                 hero_message_id = message_id
                 m = re.search('Космическая битва через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
                 state = re.search('Cтатус:\\n(.*)\\n', text)
@@ -234,7 +231,7 @@ def parse_text(text, username, message_id):
                     if m.group(2) and int(m.group(2)) <= 30:
                         if auto_def_enabled and time() - current_order['time'] > 3600:
                             if donate_enabled:
-                                gold = int(re.search('💰([0-9]+)', text).group(1))
+                                gold = int(re.search('💴([0-9]+)', text).group(1))
                                 log('Донат {0} золота в казну замка'.format(gold))
                                 action_list.append('/donate {0}'.format(gold))
                             update_order(castle)
@@ -244,7 +241,7 @@ def parse_text(text, username, message_id):
                     return
 
                 log('Времени достаточно')
-                gold = int(re.search('💰([0-9]+)', text).group(1))
+                gold = int(re.search('💴([0-9]+)', text).group(1))
                 endurance = int(re.search('Топливо: ([0-9]+)', text).group(1))
                 log('Золото: {0}, Топливо: {1}'.format(gold, endurance))
 
@@ -343,6 +340,8 @@ def parse_text(text, username, message_id):
                     '#disable_peshera - Выключить пещеры',
                     '#enable_corovan - Включить корован',
                     '#disable_corovan - Выключить корован',
+                    '#enable_star_corovan_grab - Включить грабить корован',
+                    '#disable_star_corovan_grab - Выключить грабить корован'
                     '#enable_order - Включить приказы',
                     '#disable_order - Выключить приказы',
                     '#enable_auto_def - Включить авто деф',
@@ -402,6 +401,14 @@ def parse_text(text, username, message_id):
                 send_msg(admin_username, 'Пещера успешно выключена')
 
             # Вкл/выкл корована
+            elif text == '#enable_star_corovan_grab':
+                star_corovan_grab_enabled = True
+                send_msg(admin_username, 'Грабление корованов успешно включены')
+            elif text == '#disable_star_corovan_grab':
+                star_corovan_grab_enabled = False
+                send_msg(admin_username, 'Грабление корованов успешно выключены')
+
+            # Вкл/выкл корована
             elif text == '#enable_corovan':
                 corovan_enabled = True
                 send_msg(admin_username, 'Корованы успешно включены')
@@ -447,9 +454,10 @@ def parse_text(text, username, message_id):
                     'Приказы включены: {5}',
                     'Авто деф включен: {6}',
                     'Донат включен: {7}',
-                    'Таверна включена: {8}'
+                    'Таверна включена: {8}',
+                    'Грабление корованов включено: {9}'
                 ]).format(bot_enabled, arena_enabled, les_enabled, peshera_enabled, corovan_enabled, order_enabled,
-                          auto_def_enabled, donate_enabled, taverna_enabled))
+                          auto_def_enabled, donate_enabled, taverna_enabled, star_corovan_grab_enabled))
 
             # Информация о герое
             elif text == '#hero':
