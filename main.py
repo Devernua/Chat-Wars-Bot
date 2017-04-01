@@ -58,12 +58,12 @@ orders = {
     'white': '🌐',
     'yellow': '☠',
     'blue': '⚖',
-    'lesnoi_fort': '🌲Лесной форт',
+    'lesnoi_fort': '🛢Научный центр',
     'les': '🌲Лес',
-    'gorni_fort': '⛰Горный форт',
+    'gorni_fort': '💎Ресурсный центр',
     'gora': '⛰',
-    'cover': '🛡 Защита',
-    'attack': '⚔ Атака',
+    'cover': '🎚Оборона',
+    'attack': '💣Нападение',
     'cover_symbol': '🛡',
     'hero': '👨‍🚀 Пилот',
     'corovan': '/intercept',
@@ -223,7 +223,7 @@ def parse_text(text, username, message_id):
                 lt_info = time()
                 action_list.append(orders['hero'])
 
-            elif text.find('Космическая битва через ') != -1:
+            elif text.find('Космическая битва через') != -1:
                 hero_message_id = message_id
                 m = re.search('Космическая битва через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
                 state = re.search('Cтатус:\\n(.*)\\n', text)
