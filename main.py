@@ -226,7 +226,7 @@ def parse_text(text, username, message_id):
             elif text.find('Космическая битва через ') != -1:
                 hero_message_id = message_id
                 m = re.search('Космическая битва через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
-                state = re.search('Cтатус:\\n(.*)\\n', text)
+                state = re.search('🚀Статус:\\n(.*)\\n', text)
                 if not m.group(1):
                     if m.group(2) and int(m.group(2)) <= 30:
                         if auto_def_enabled and time() - current_order['time'] > 3600:
