@@ -53,11 +53,11 @@ for opt, arg in opts:
         port = int(arg)
 
 orders = {
-    'red': '🇮🇲',
-    'black': '🇬🇵',
-    'white': '🇨🇾',
-    'yellow': '🇻🇦',
-    'blue': '🇪🇺',
+    'red': '⭕',
+    'black': '⚫',
+    'white': '🌐',
+    'yellow': '☠',
+    'blue': '⚖',
     'lesnoi_fort': '🌲Лесной форт',
     'les': '🌲Лес',
     'gorni_fort': '⛰Горный форт',
@@ -65,10 +65,11 @@ orders = {
     'cover': '🛡 Защита',
     'attack': '⚔ Атака',
     'cover_symbol': '🛡',
-    'hero': '🏅Герой',
+    'hero': '👨‍🚀 Пилот',
     'corovan': '/go',
     'peshera': '🕸Пещера',
-    'taverna': '🍺Взять кружку эля'
+    'taverna': '🍺Взять кружку эля',
+    'star_corovan_grab': '🐫ГРАБИТЬ КОСМИЧЕСКИЕ КОРОВАНЫ'
 }
 
 captcha_answers = {
@@ -94,7 +95,10 @@ states_map = {
     'arena': '📯На арене',
     'les': '🌲В лесу',
     'peshera': '🕸В пещере',
-    'taverna': '🍺Пьешь в таверне'
+    'taverna': '🍺Пьешь в таверне',
+    'star_relax': '⛽️В ангаре',
+    'star_attack': '💣Штурм',
+    'star_defense': '🎚Оборона'
 }
 
 arena_cover = ['🛡головы', '🛡корпуса', '🛡ног']
@@ -114,10 +118,11 @@ last_captcha_id = 0
 
 bot_enabled = True
 arena_enabled = True
-taverna_enabled = True
-les_enabled = True
+taverna_enabled = False
+les_enabled = False
 peshera_enabled = False
 corovan_enabled = True
+star_corovan_grab_enabled = True
 order_enabled = True
 auto_def_enabled = True
 donate_enabled = False
@@ -176,6 +181,7 @@ def parse_text(text, username, message_id):
     global auto_def_enabled
     global donate_enabled
     global last_captcha_id
+    global star_corovan_grab_enabled
     if username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
 
@@ -220,10 +226,10 @@ def parse_text(text, username, message_id):
                 lt_info = time()
                 action_list.append(orders['hero'])
 
-            elif text.find('Битва пяти замков через') != -1:
+            elif text.find('Космическая битва через') != -1:
                 hero_message_id = message_id
-                m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
-                state = re.search('Состояние:\\n(.*)\\n', text)
+                m = re.search('Космическая битва через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
+                state = re.search('Cтатус:\\n(.*)\\n', text)
                 if not m.group(1):
                     if m.group(2) and int(m.group(2)) <= 30:
                         if auto_def_enabled and time() - current_order['time'] > 3600:
@@ -233,16 +239,16 @@ def parse_text(text, username, message_id):
                                 action_list.append('/donate {0}'.format(gold))
                             update_order(castle)
                         return
-                if states_map['relax'] not in state.group(1) and states_map['defense'] not in state.group(1) and \
-                                states_map['attack'] not in state.group(1):
+                if states_map['star_relax'] not in state.group(1) and states_map['star_defense'] not in state.group(1) and \
+                                states_map['star_attack'] not in state.group(1):
                     return
 
                 log('Времени достаточно')
                 gold = int(re.search('💰([0-9]+)', text).group(1))
-                endurance = int(re.search('Выносливость: ([0-9]+)', text).group(1))
-                log('Золото: {0}, выносливость: {1}'.format(gold, endurance))
+                endurance = int(re.search('Топливо: ([0-9]+)', text).group(1))
+                log('Золото: {0}, Топливо: {1}'.format(gold, endurance))
 
-                if text.find('/level_up') != -1 and '/level_up' not in action_list:
+                """if text.find('/level_up') != -1 and '/level_up' not in action_list:
                     damage = int(re.search('Атака: ([0-9]+)', text).group(1))
                     defence = int(re.search('Защита: ([0-9]+)', text).group(1))
                     action_list.append('/level_up')
@@ -250,13 +256,16 @@ def parse_text(text, username, message_id):
                     if damage > defence:
                         action_list.append('+1 ⚔Атака')
                     else:
-                        action_list.append('+1 🛡Защита')
+                        action_list.append('+1 🛡Защита')"""
 
                 if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                     action_list.append(orders['peshera'])
 
                 elif les_enabled and endurance >= 2 and orders['les'] not in action_list:
                     action_list.append(orders['les'])
+
+                elif star_corovan_grab_enabled and endurance >= 3 and orders['star_corovan_grab'] not in action_list:
+                    action_list.append(orders['star_corovan_grab'])
 
                 elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
                     action_list.append('🔎Поиск соперника')
@@ -280,7 +289,7 @@ def parse_text(text, username, message_id):
                             "Ты сейчас занят" not in text and "Ветер завывает" not in text and \
                             "Соперник найден" not in text and "Синий замок" not in text and \
                             "Синего замка" not in text and "Общение внутри замка" not in text and \
-                            "Победил воин" not in text and not re.findall(r'\bнанес\b(.*)\bудар\b', s):
+                            "Победил воин" not in text and not re.findall(r'\bнанес\b(.*)\bудар\b', text):
                 with open('taverna.txt', 'a+') as f:
                     f.seek(0)
                     for line in f:
