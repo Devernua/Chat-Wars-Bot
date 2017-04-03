@@ -279,8 +279,7 @@ def parse_text(text, username, message_id):
             elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and \
                             "Ты сейчас занят" not in text and "Ветер завывает" not in text and \
                             "Соперник найден" not in text and "Синий замок" not in text and \
-                            "Синего замка" not in text and "Общение внутри замка" not in text and \
-                            "Победил воин" not in text and not re.findall(r'\bнанес\b(.*)\bудар\b', s):
+                            "Синего замка" not in text and "Общение внутри замка" not in text:
                 with open('taverna.txt', 'a+') as f:
                     f.seek(0)
                     for line in f:
