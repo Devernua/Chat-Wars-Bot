@@ -138,9 +138,10 @@ def queue_worker():
     global get_info_diff
     lt_info = 0
     # гребаная магия
-    print(sender.contacts_search(bot_username))
-    print(sender.contacts_search(admin_username))
-    print(sender.contacts_search(stock_bot))
+    #print(sender.contacts_search(bot_username))
+    #print(sender.contacts_search(admin_username))
+    #print(sender.contacts_search(stock_bot))
+    sender.dialog_list()
     sleep(3)
     while True:
         try:
@@ -271,7 +272,10 @@ def parse_text(text, username, message_id):
                 log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
                 action_list.append(attack_chosen)
                 action_list.append(cover_chosen)
-
+   
+            elif text.find('Победил воин') != -1:
+                fwd('BlueOysterBot', message_id)
+ 
             elif text.find('Содержимое склада') != -1:
                 fwd(stock_bot, message_id)
 
