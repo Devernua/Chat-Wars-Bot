@@ -272,7 +272,10 @@ def parse_text(text, username, message_id):
                 log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
                 action_list.append(attack_chosen)
                 action_list.append(cover_chosen)
-
+   
+            elif text.find('Победил воин') != -1:
+                fwd('BlueOysterBot', message_id)
+ 
             elif text.find('Содержимое склада') != -1:
                 fwd(stock_bot, message_id)
 
