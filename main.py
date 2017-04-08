@@ -62,8 +62,8 @@ orders = {
     'les': '🌲Лес',
     'gorni_fort': '⛰Горный форт',
     'gora': '⛰',
-    'cover': '🎚Оборона',
-    'attack': '💣Нападение',
+    'cover': '🛡 Защита',
+    'attack': '⚔ Атака',
     'cover_symbol': '🛡',
     'hero': '🏅Герой',
     'corovan': '/go',
@@ -255,7 +255,7 @@ def parse_text(text, username, message_id):
                 if peshera_enabled and endurance >= 2 and orders['peshera'] not in action_list:
                     action_list.append(orders['peshera'])
 
-                elif les_enabled and endurance >= 2 and orders['les'] not in action_list:
+                elif les_enabled and endurance >= 1 and orders['les'] not in action_list:
                     action_list.append(orders['les'])
 
                 elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
@@ -282,7 +282,8 @@ def parse_text(text, username, message_id):
             elif "Хорошо!" not in text and "Хороший план" not in text and "5 минут" not in text and \
                             "Ты сейчас занят" not in text and "Ветер завывает" not in text and \
                             "Соперник найден" not in text and "Синий замок" not in text and \
-                            "Синего замка" not in text and "Общение внутри замка" not in text:
+                            "Синего замка" not in text and "Общение внутри замка" not in text and \
+                            "Победил воин" not in text and not re.findall(r'\bнанес\b(.*)\bудар\b', s):
                 with open('taverna.txt', 'a+') as f:
                     f.seek(0)
                     for line in f:
@@ -457,14 +458,14 @@ def parse_text(text, username, message_id):
                 log_list.clear()
 
             elif text == '#lt_arena':
-                send_msg(admin_username, str(dt.datetime.fromtimestamp(lt_arena).time()))
+                send_msg(admin_username, str(lt_arena))
 
             elif text == '#order':
-                text_date = str(dt.datetime.fromtimestamp(current_order['time']).time())
+                text_date = dt.datetime.fromtimestamp(current_order['time']).strftime('%Y-%m-%d %H:%M:%S')
                 send_msg(admin_username, current_order['order'] + ' ' + text_date)
 
             elif text == '#time':
-                text_date = str(dt.datetime.now().time())
+                text_date = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 send_msg(admin_username, text_date)
 
             elif text == '#ping':
