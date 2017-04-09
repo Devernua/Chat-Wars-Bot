@@ -6,6 +6,7 @@ from collections import deque
 from time import time, sleep
 from getopt import getopt
 import sys
+import dateutil
 import datetime as dt
 import re
 import _thread
@@ -26,9 +27,6 @@ order_usernames = ''
 castle_name = 'blue'
 
 captcha_bot = 'ChatWarsCaptchaBot'
-
-# путь к сокет файлу
-socket_path = ''
 
 # хост чтоб слушать telegram-cli
 host = 'localhost'
@@ -104,10 +102,12 @@ castle = orders[castle_name]
 # текущий приказ на атаку/защиту, по умолчанию всегда защита, трогать не нужно
 current_order = {'time': 0, 'order': castle}
 
-sender = Sender(sock=socket_path) if socket_path else Sender(host=host, port=port)
+sender = Sender(host=host, port=port)
 action_list = deque([])
 log_list = deque([], maxlen=30)
 lt_arena = 0
+lt_sell = 0
+lt_info = 0
 get_info_diff = 360
 hero_message_id = 0
 last_captcha_id = 0
@@ -121,6 +121,7 @@ corovan_enabled = True
 order_enabled = True
 auto_def_enabled = True
 donate_enabled = False
+sell_enabled = True
 
 
 @coroutine
@@ -128,7 +129,8 @@ def work_with_message(receiver):
     while True:
         msg = (yield)
         try:
-            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None:
+            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None \
+                    and (dt.datetime.now() - dateutil.parser(msg["when"])).seconds < 30:
                 parse_text(msg['text'], msg['sender']['username'], msg['id'])
         except Exception as err:
             log('Ошибка coroutine: {0}'.format(err))
@@ -136,11 +138,7 @@ def work_with_message(receiver):
 
 def queue_worker():
     global get_info_diff
-    lt_info = 0
-    # гребаная магия
-    #print(sender.contacts_search(bot_username))
-    #print(sender.contacts_search(admin_username))
-    #print(sender.contacts_search(stock_bot))
+    global lt_info
     sender.dialog_list()
     sleep(3)
     while True:
@@ -165,6 +163,7 @@ def queue_worker():
 def parse_text(text, username, message_id):
     global lt_arena
     global lt_info
+    global lt_sell
     global hero_message_id
     global bot_enabled
     global arena_enabled
@@ -175,6 +174,7 @@ def parse_text(text, username, message_id):
     global order_enabled
     global auto_def_enabled
     global donate_enabled
+    global sell_enabled
     global last_captcha_id
     if username == bot_username:
         log('Получили сообщение от бота. Проверяем условия')
@@ -220,6 +220,10 @@ def parse_text(text, username, message_id):
                 lt_info = time()
                 action_list.append(orders['hero'])
 
+            elif text.find('[невозможно выполнить данную операцию]') != -1 and sell_enabled:
+                sell_enabled = False
+                send_msg(admin_username, 'Закончились нитки :(')
+
             elif text.find('Битва пяти замков через') != -1:
                 hero_message_id = message_id
                 m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
@@ -258,8 +262,13 @@ def parse_text(text, username, message_id):
                 elif les_enabled and endurance >= 1 and orders['les'] not in action_list:
                     action_list.append(orders['les'])
 
-                elif arena_enabled and gold >= 5 and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
-                    action_list.append('🔎Поиск соперника')
+                elif arena_enabled and '🔎Поиск соперника' not in action_list and time() - lt_arena > 3600:
+                    if gold >= 5:
+                        action_list.append('🔎Поиск соперника')
+                    elif sell_enabled and time() - lt_sell > 3000:
+                        action_list.append('/s_101 ' + str((6 - gold) // 2))
+                        lt_sell = time()
+                        action_list.append('🔎Поиск соперника')
 
                 elif taverna_enabled and gold >= 20 and orders['taverna'] not in action_list and \
                         (dt.datetime.now().time() >= dt.time(19) or dt.datetime.now().time() < dt.time(6)):
@@ -283,7 +292,7 @@ def parse_text(text, username, message_id):
                             "Ты сейчас занят" not in text and "Ветер завывает" not in text and \
                             "Соперник найден" not in text and "Синий замок" not in text and \
                             "Синего замка" not in text and "Общение внутри замка" not in text and \
-                            "Победил воин" not in text and not re.findall(r'\bнанес\b(.*)\bудар\b', s):
+                            "Победил воин" not in text and not re.findall(r'\bнанес\b(.*)\bудар\b', text):
                 with open('taverna.txt', 'a+') as f:
                     f.seek(0)
                     for line in f:
@@ -330,7 +339,9 @@ def parse_text(text, username, message_id):
                     '#enable_arena - Включить арену',
                     '#disable_arena - Выключить арену',
                     '#disable_taverna - Выключить таверну',
-                    '#enable_taverna - Влючить таверну',
+                    '#enable_taverna - Включить таверну',
+                    '#enable_sell - Включить продажу ниток',
+                    '#disable_sell - Выключить продажу ниток',
                     '#enable_les - Включить лес',
                     '#disable_les - Выключить лес',
                     '#enable_peshera - Включить пещеры',
@@ -362,6 +373,13 @@ def parse_text(text, username, message_id):
             elif text == '#disable_bot':
                 bot_enabled = False
                 send_msg(admin_username, 'Бот успешно выключен')
+
+            elif text == '#enable_sell':
+                sell_enabled = True
+                send_msg(admin_username, 'Продажа ниток влючена')
+            elif text == '#disable_sell':
+                sell_enabled = False
+                send_msg(admin_username, 'Продажа ниток выключена')
 
             # Вкл/выкл арены
             elif text == '#enable_arena':
@@ -441,9 +459,10 @@ def parse_text(text, username, message_id):
                     'Приказы включены: {5}',
                     'Авто деф включен: {6}',
                     'Донат включен: {7}',
-                    'Таверна включена: {8}'
+                    'Таверна включена: {8}',
+                    'Продажа ниток: {9}',
                 ]).format(bot_enabled, arena_enabled, les_enabled, peshera_enabled, corovan_enabled, order_enabled,
-                          auto_def_enabled, donate_enabled, taverna_enabled))
+                          auto_def_enabled, donate_enabled, taverna_enabled, sell_enabled))
 
             # Информация о герое
             elif text == '#hero':
@@ -458,14 +477,14 @@ def parse_text(text, username, message_id):
                 log_list.clear()
 
             elif text == '#lt_arena':
-                send_msg(admin_username, str(lt_arena))
+                send_msg(admin_username, str(dt.datetime.fromtimestamp(lt_arena).time()))
 
             elif text == '#order':
-                text_date = dt.datetime.fromtimestamp(current_order['time']).strftime('%Y-%m-%d %H:%M:%S')
+                text_date = str(dt.datetime.fromtimestamp(current_order['time']).time())
                 send_msg(admin_username, current_order['order'] + ' ' + text_date)
 
             elif text == '#time':
-                text_date = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                text_date = str(dt.datetime.now().time())
                 send_msg(admin_username, text_date)
 
             elif text == '#ping':
