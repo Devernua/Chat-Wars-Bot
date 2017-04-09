@@ -130,7 +130,7 @@ def work_with_message(receiver):
         msg = (yield)
         try:
             if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None \
-                    and (dt.datetime.now() - dateutil.parser(msg["when"])).seconds < 30:
+                    and (dt.datetime.now() - dt.datetime.strptime(msg["when"], "%Y-%m-%dT%H:%M:%S")).seconds < 30:
                 parse_text(msg['text'], msg['sender']['username'], msg['id'])
         except Exception as err:
             log('Ошибка coroutine: {0}'.format(err))
