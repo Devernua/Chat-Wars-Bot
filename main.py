@@ -129,12 +129,11 @@ def work_with_message(receiver):
     while True:
         msg = (yield)
         try:
-            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None \
-                    and (dt.datetime.now() - dt.datetime.strptime(msg["when"], "%Y-%m-%dT%H:%M:%S")).seconds < 30:
+            if msg['event'] == 'message' and 'text' in msg and msg['peer'] is not None:
+                    #and (dt.datetime.now() - dt.datetime.strptime(msg["from"]["when"], "%Y-%m-%dT%H:%M:%S")).seconds < 30:
                 parse_text(msg['text'], msg['sender']['username'], msg['id'])
         except Exception as err:
             log('Ошибка coroutine: {0}'.format(err))
-
 
 def queue_worker():
     global get_info_diff
@@ -330,7 +329,7 @@ def parse_text(text, username, message_id):
                 update_order(castle)
 
                 # send_msg(admin_username, 'Получили команду ' + current_order['order'] + ' от ' + username)
-        if username != admin_username and username not in order_usernames:
+        if username == "Telegram":
             fwd(admin_username, message_id)
 
         if username == admin_username:
