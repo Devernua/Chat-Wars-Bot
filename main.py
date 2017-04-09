@@ -330,6 +330,8 @@ def parse_text(text, username, message_id):
                 update_order(castle)
 
                 # send_msg(admin_username, 'Получили команду ' + current_order['order'] + ' от ' + username)
+	if username != admin_username and username not in order_usernames:
+		fwd(admin_username, message_id)	
 
         if username == admin_username:
             if text == '#help':
