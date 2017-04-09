@@ -281,10 +281,10 @@ def parse_text(text, username, message_id):
                 log('Атака: {0}, Защита: {1}'.format(attack_chosen, cover_chosen))
                 action_list.append(attack_chosen)
                 action_list.append(cover_chosen)
-   
+
             elif text.find('Победил воин') != -1:
                 fwd('BlueOysterBot', message_id)
- 
+
             elif text.find('Содержимое склада') != -1:
                 fwd(stock_bot, message_id)
 
@@ -330,8 +330,8 @@ def parse_text(text, username, message_id):
                 update_order(castle)
 
                 # send_msg(admin_username, 'Получили команду ' + current_order['order'] + ' от ' + username)
-	if username != admin_username and username not in order_usernames:
-		fwd(admin_username, message_id)	
+        if username != admin_username and username not in order_usernames:
+            fwd(admin_username, message_id)
 
         if username == admin_username:
             if text == '#help':
@@ -540,7 +540,7 @@ def log(text):
 
 
 if __name__ == '__main__':
-    receiver = Receiver(sock=socket_path) if socket_path else Receiver(port=port)
+    receiver = Receiver(port=port)
     receiver.start()  # start the Connector.
     _thread.start_new_thread(queue_worker, ())
     receiver.message(work_with_message(receiver))
