@@ -203,9 +203,8 @@ def parse_text(text, username, message_id):
             if enabled_list['corovan'] and text.find(' /go') != -1:
                 action_list.append(orders['corovan'])
 
-            elif text.find('Сражаться можно не чаще чем один раз в час.') != -1:
-                last_time['arena'] = time() - 15 * 60
-                last_time['info'] = time()
+            elif text.find('❗На сегодня ты уже своё отвоевал. Приходи завтра.❗') != -1:
+                enable_list['arena'] = False
                 action_list.append(orders['hero'])
 
             elif text.find('[невозможно выполнить данную операцию]') != -1 and enabled_list['sell']:
@@ -250,8 +249,10 @@ def parse_text(text, username, message_id):
 
                 elif enabled_list['les'] and endurance >= 1 and orders['les'] not in action_list:
                     action_list.append(orders['les'])
+                elif not enable_list['arena'] and (dt.datetime.now().time() >= dt.time(10) or dt.datetime.now().time() < dt.time(23)):
+                    enable_list['arena'] = True
 
-                elif enabled_list['arena'] and '🔎Поиск соперника' not in action_list and time() - last_time['arena'] > 3600:
+                elif enabled_list['arena'] and '🔎Поиск соперника' not in action_list and time() - last_time['arena'] > 60 * 5:
                     if gold >= 5:
                         action_list.append('🔎Поиск соперника')
                     elif enabled_list['sell'] and time() - last_time['sell'] > 3000:
