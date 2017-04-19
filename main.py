@@ -217,7 +217,7 @@ def parse_text(text, username, message_id):
                 m = re.search('Битва пяти замков через(?: ([0-9]+)ч){0,1}(?: ([0-9]+)){0,1}', text)
                 state = re.search('Состояние:\\n(.*)\\n', text)
                 if not m.group(1):
-                    if m.group(2) and int(m.group(2)) <= 30:
+                    if (m.group(2) and int(m.group(2)) <= 30) or text.find('Битва пяти замков через несколько секунд!') != -1:
                         if enabled_list['auto_def'] and time() - current_order['time'] > 3600:
                             if enabled_list['donate']:
                                 gold = int(re.search('💰([0-9]+)', text).group(1))
